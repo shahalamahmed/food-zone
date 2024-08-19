@@ -1,0 +1,27 @@
+#banner-heading {
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke-color: currentColor;
+    -webkit-text-stroke-width: var(--heading-stroke-size, 0.5px);
+}
+
+.slider-dot {
+    width: 28px !important;
+    height: 4px !important;
+    background-color: #ffffff8b;
+    border-radius: 40px;
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.slider-dot:last-child {
+    margin-right: 0;
+}
+
+.slider-dot:focus {
+    outline: none;
+}
+
+.slider-dot.active {
+    background: #fff;
+}
