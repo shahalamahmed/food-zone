@@ -9,8 +9,7 @@ const LatestBlogs = () => {
     const { user } = useContext(AuthContext);
     const { allBlogs, loading } = useBlogs();
     const [votes, setVotes] = useState({});
-
-    console.log(allBlogs)
+    const [expandedPost, setExpandedPost] = useState(null);
 
     const handleVote = (blogId, voteType) => {
         if (!user) {
@@ -43,68 +42,68 @@ const LatestBlogs = () => {
         });
     };
 
-    if (loading) return <Skeleton count={10}></Skeleton>;
+    const handleShowMore = (blogId) => {
+        setExpandedPost(expandedPost === blogId ? null : blogId);
+    };
 
-    // Sort blogs by publish date in descending order
-    // const sortedBlogs = blogs?.blogs?.sort(
-    //   (a, b) => new Date(b.date) - new Date(a.date)
-    // );
+    if (loading) return <Skeleton count={10} />;
 
     return (
-        <div className="latest-forum-posts mb-10">
-            <h2 className="text-center text-4xl mt-5 font-bold">
-                Latest Forum Posts
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mx-16">
-                {allBlogs?.map((blog) => (
-                    <div
-                        key={blog._id}
-                        className="mt-10 bg-base-200 p-6 rounded-lg shadow-md"
-                    >
-                        <h1 className="text-xl font-bold">
-                            Author: {blog?.author} {blog?.role}
-                        </h1>
-                        <hr className="my-3" />
-                        <h2 className="text-xl font-bold mb-2">{blog.title}</h2>
-                        <h1 className="text-sm font-medium mb-4">
-                            Published on: {blog.date}
-                        </h1>
-                        <p className="text-gray-700 mb-4">{blog.description}</p>
-                        <img
-                            src={blog.image}
-                            alt={blog.title}
-                            className="w-full h-[300px] mb-4 rounded-lg"
-                        />
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                                <button
-                                    className={`rounded-full p-2 mr-2 ${votes[blog._id] === 1
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-blue-500 text-white"
-                                        }`}
-                                    onClick={() => handleVote(blog._id, "up")}
-                                >
-                                    &#9650;
-                                </button>
-                                <span className="font-semibold text-lg">
-                                    {votes[blog._id] || 0}
-                                </span>
-                                <button
-                                    className={`rounded-full p-2 ml-2 ${votes[blog._id] === -1
-                                            ? "bg-red-600 text-white"
-                                            : "bg-red-500 text-white"
-                                        }`}
-                                    onClick={() => handleVote(blog._id, "down")}
-                                >
-                                    &#9660;
-                                </button>
+        <div className="latest-blogs py-12 bg-gray-100">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">Latest Blog Posts</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {allBlogs?.map((blog) => (
+                        <div
+                            key={blog._id}
+                            className={`bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-300 ${
+                                expandedPost === blog._id ? 'transform scale-105' : 'transform scale-100'
+                            }`}
+                        >
+                            <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
+                            <div className="p-6">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">{blog.title}</h3>
+                                <p className="text-gray-600 mb-4">
+                                    {expandedPost === blog._id
+                                        ? blog.description
+                                        : blog.description.split(' ').length > 30
+                                            ? `${blog.description.split(' ').slice(0, 30).join(' ')}...`
+                                            : blog.description}
+                                </p>
+                                {blog.description.split(' ').length > 30 && (
+                                    <button
+                                        className="text-blue-500 hover:underline"
+                                        onClick={() => handleShowMore(blog._id)}
+                                    >
+                                        {expandedPost === blog._id ? "Show Less" : "Show More"}
+                                    </button>
+                                )}
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            className={`p-2 rounded-full ${votes[blog._id] === 1 ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'}`}
+                                            onClick={() => handleVote(blog._id, "up")}
+                                        >
+                                            &#9650;
+                                        </button>
+                                        <span className="font-semibold text-lg">{votes[blog._id] || 0}</span>
+                                        <button
+                                            className={`p-2 rounded-full ${votes[blog._id] === -1 ? 'bg-red-600 text-white' : 'bg-red-500 text-white'}`}
+                                            onClick={() => handleVote(blog._id, "down")}
+                                        >
+                                            &#9660;
+                                        </button>
+                                    </div>
+                                    <Link to={`/blogs/${blog._id}`}>
+                                        <button className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">
+                                            Read More
+                                        </button>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                        <Link to="/community">
-                            <button className="btn btn-outline mt-3">Explore</button>
-                        </Link>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </div>
     );

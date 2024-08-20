@@ -1,0 +1,31 @@
+.latest-blogs {
+    background-color: #f8f9fa;
+    padding: 2rem 0;
+}
+
+.latest-blogs h2 {
+    color: #343a40;
+}
+
+.latest-blogs .bg-white {
+    background-color: #ffffff;
+}
+
+.latest-blogs .btn-primary {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.latest-blogs .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.latest-blogs .btn-outline {
+    border: 1px solid #007bff;
+    color: #007bff;
+}
+
+.latest-blogs .btn-outline:hover {
+    background-color: #007bff;
+    color: #ffffff;
+}
