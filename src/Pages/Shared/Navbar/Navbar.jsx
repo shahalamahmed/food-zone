@@ -19,6 +19,7 @@ const NavBar = () => {
             <li><Link className={isActive("/")} to="/">Home</Link></li>
             <li><Link className={isActive("/about")} to="/about">About</Link></li>
             <li><Link className={isActive("/blogs")} to="/blogs">Blogs</Link></li>
+            <li><Link className={isActive("/Course")} to="/allCourse">Course</Link></li>
             {user ? (
                 <>
                     <li>
