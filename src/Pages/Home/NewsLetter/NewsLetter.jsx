@@ -50,10 +50,7 @@ const Newsletter = () => {
         <section className="bg-gray-200 py-12">
             <div className="container mx-auto px-6 lg:px-20">
                 <h2 className="text-3xl font-bold text-center mb-8">Join Our Newsletter</h2>
-                <p className="text-center mb-4 text-lg text-gray-700">
-                    Join our email subscription now to get updates on promotions and coupons. <br />
-                    <span className="font-semibold text-blue-500">$20 discount</span> for your first order!
-                </p>
+               
                 <form onSubmit={handleSubmit} className="max-w-md mx-auto">
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-gray-700">Name:</label>

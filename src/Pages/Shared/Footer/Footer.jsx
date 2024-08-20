@@ -13,7 +13,7 @@ const Footer = () => {
 
 
                     <div className="w-full lg:w-1/3 mb-6 lg:mb-0">
-                        <h1 className="text-4xl font-bold mb-10">Electro</h1>
+                        <h1 className="text-4xl font-bold mb-10">Knowledge Center</h1>
                         <h3 className="text-xl font-bold mb-4">Got questions? Call us 24/7!</h3>
                         <p className="text-lg">Phone: (800) 8001-8588, (0600) 874 548</p>
                         <p className="text-lg mt-2">17 Princess Road, London, Greater London NW1 8JR, UK</p>

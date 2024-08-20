@@ -24,28 +24,28 @@ const Banner = () => {
     const banners = [
         {
             image:
-                "https://i.ibb.co/4sYtj9z/istockphoto-1501067984-612x612.jpg",
+                "https://i.ibb.co/V3D7XV9/premium-photo-1680807869780-e0876a6f3cd5.jpg",
             megaOffer: false,
             offerDate: "",
             __v: 0,
         },
         {
             image:
-                "https://i.ibb.co/zhXZ27b/still-life-gym-equipment-23-2148197742.jpg",
+                "https://i.ibb.co/ySvXtVS/istockphoto-1343547238-2048x2048.jpg",
             megaOffer: true,
             offerDate: "",
             __v: 0,
         },
         {
             image:
-                "https://i.ibb.co/x6TVZMf/fitness-gym-workout-exercise-machine-equipment-health-body-sport-healthy-training-fit-li-932514-4031.jpg",
+                "https://i.ibb.co/Ypf6RYY/istockphoto-656378092-2048x2048.jpg",
             megaOffer: true,
             offerDate: "",
             __v: 0,
         },
         {
             image:
-                "https://i.ibb.co/ZXJvv3r/gym-interior-with-equipments-23-2147949749.jpg",
+                "https://i.ibb.co/6RfhqYs/photo-1499750310107-5fef28a66643.jpg",
             megaOffer: true,
             offerDate: "",
             __v: 0,
@@ -126,7 +126,7 @@ const Banner = () => {
                                         transition={{ duration: 0.5, delay: 0.2 }}
                                         className="text-2xl font-normal mt-5 tracking-wider text-white"
                                     >
-                                        Workout Everyday
+                                        
                                     </motion.h3>
                                     <motion.h2
                                         initial={{ opacity: 0, y: -20 }} // Initial state (hidden and 50px down)
@@ -136,7 +136,7 @@ const Banner = () => {
                                         style={{ textFillColor: "transparent" }}
                                         className="text-2xl font-bold text-center uppercase md:text-7xl text-white"
                                     >
-                                        Our Most Premium Assets
+                                        Discover the Best in Learning and Development
                                     </motion.h2>
                                     <motion.p
                                         initial={{ opacity: 0, y: -20 }} // Initial state (hidden and 50px down)
@@ -144,7 +144,7 @@ const Banner = () => {
                                         transition={{ duration: 0.5, delay: 0.6 }}
                                         className="text-2xl font-normal tracking-wider text-white"
                                     >
-                                        Health Is Wealth
+                                       
                                     </motion.p>
                                     <motion.div
                                         initial={{ opacity: 0, y: -20 }} // Initial state (hidden and 50px down)

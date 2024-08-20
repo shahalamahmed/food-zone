@@ -1,4 +1,5 @@
 import Banner from "../Banner/Banner";
+import FeaturedCourses from "../FeaturedCourse/FeaturedCourse";
 import LatestBlogs from "../LatestBlogs/LatestBlogs";
 import Newsletter from "../NewsLetter/NewsLetter";
 
@@ -6,8 +7,8 @@ import Newsletter from "../NewsLetter/NewsLetter";
 const Home = () => {
     return (
         <div>
-            <h1> this is home section</h1>
             <Banner></Banner>
+            <FeaturedCourses></FeaturedCourses>
             <LatestBlogs></LatestBlogs>
             <Newsletter></Newsletter>
         </div>
