@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import useAxiosPublic from "../../../hooks/useAxiosPublic";
+import Swal from "sweetalert2";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 const AllCourses = () => {
     const axiosPublic = useAxiosPublic();
@@ -63,6 +65,62 @@ const AllCourses = () => {
         setExpandedCourse(expandedCourse === courseId ? null : courseId);
     };
 
+    const handleDelete = async (courseId) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "This course will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                const deleteResponse = await axiosPublic.delete(`/courses/${courseId}`);
+                if (deleteResponse.data.deletedCount === 1) {
+                    Swal.fire(
+                        'Deleted!',
+                        'The course has been deleted.',
+                        'success'
+                    );
+                    // Remove the deleted course from the state
+                    setCourses(courses.filter(course => course._id !== courseId));
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        'The course could not be deleted.',
+                        'error'
+                    );
+                }
+            }
+        } catch (error) {
+            Swal.fire(
+                'Error!',
+                'Failed to delete the course.',
+                'error'
+            );
+        }
+    };
+
+    const renderStars = (rating) => {
+        if (rating === undefined || rating === null || isNaN(rating)) {
+            rating = 0;
+        }
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            if (rating >= i) {
+                stars.push(<FaStar key={i} className="text-yellow-500" />);
+            } else if (rating >= i - 0.5) {
+                stars.push(<FaStarHalfAlt key={i} className="text-yellow-500" />);
+            } else {
+                stars.push(<FaRegStar key={i} className="text-yellow-500" />);
+            }
+        }
+        return stars;
+    };
+
     return (
         <div>
             <h1 className="text-3xl font-bold text-center mb-8 mt-28">All Courses</h1>
@@ -100,7 +158,7 @@ const AllCourses = () => {
                     {
                         loader ? <Skeleton count={10} /> : courses?.map((course) => (
                             <div
-                                key={course.id}
+                                key={course._id}
                                 className="bg-base-200 shadow-md rounded-lg flex flex-col md:flex-row"
                             >
                                 <img
@@ -110,13 +168,27 @@ const AllCourses = () => {
                                 />
                                 <div className="p-6 flex flex-col justify-between">
                                     <div>
+                                        {/* Display Category */}
+                                        {course.categories && course.categories.length > 0 && (
+                                            <div className="text-sm font-medium text-gray-600 mb-2">
+                                                Category: {course.categories[0].categoryName}
+                                            </div>
+                                        )}
                                         <h2 className="text-2xl font-semibold mb-4">
                                             {course.courseName}
                                         </h2>
+                                        <div className="flex items-center mb-4">
+                                            <div className="flex space-x-1">
+                                                {renderStars(Number(course.rating))}
+                                            </div>
+                                            <span className="ml-2 text-gray-600">
+                                                {Number(course.rating).toFixed(1)}
+                                            </span>
+                                        </div>
                                         <p className="text-gray-700 mb-4">
                                             {
                                                 course.description ?
-                                                    (expandedCourse === course.id
+                                                    (expandedCourse === course._id
                                                         ? course.description
                                                         : `${course.description.split(' ').slice(0, 40).join(' ')}${course.description.split(' ').length > 40 ? '...' : ''}`)
                                                     : 'No description available'
@@ -124,12 +196,28 @@ const AllCourses = () => {
                                         </p>
                                         {course.description && course.description.split(' ').length > 40 && (
                                             <button
-                                                onClick={() => toggleDescription(course.id)}
+                                                onClick={() => toggleDescription(course._id)}
                                                 className="text-blue-600 hover:underline"
                                             >
-                                                {expandedCourse === course.id ? "Show Less" : "Show More"}
+                                                {expandedCourse === course._id ? "Show Less" : "Show More"}
                                             </button>
                                         )}
+                                    </div>
+                                    <div className="mt-4 flex space-x-4">
+                                        <div className="text-lg font-semibold text-gray-800">
+                                            ${(Number(course.price) || 0).toFixed(2)}
+                                        </div>
+                                        <Link to={`/updateCourse/${course._id}`}>
+                                            <button className="px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition duration-300">
+                                                Update Course
+                                            </button>
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(course._id)}
+                                            className="px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition duration-300"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -149,7 +237,7 @@ const AllCourses = () => {
                     <span className="text-lg mx-2 font-semibold">{currentPage}</span>
                     <button
                         onClick={handleNextPage}
-                        className={`${currentPage === numberOfPages
+                        className={`${currentPage === pages.length
                             ? "bg-gray-300 text-gray-400"
                             : "bg-blue-500 text-white hover:bg-blue-600"
                             } rounded-full p-3 mx-1 transition-colors duration-300 ease-in-out`}

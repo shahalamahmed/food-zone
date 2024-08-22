@@ -2,52 +2,83 @@ import { useContext, useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import useAxiosPublic from "../../../hooks/useAxiosPublic";
 import moment from "moment";
-// import useAdmin from "../../../hooks/useAdmin";
+import axios from "axios"; // Import axios
 import { AuthContext } from "../../../Providers/AuthProviders";
 
 const AddBlog = () => {
     const axiosPublic = useAxiosPublic();
     const { user } = useContext(AuthContext);
     const [currentDate, setCurrentDate] = useState();
-    // const [isAdmin] = useAdmin();
-    // console.log(isAdmin)
+    const [imageUrl, setImageUrl] = useState(""); // State to store the uploaded image URL
+
     useEffect(() => {
-        const data = moment().format('YYYY/MM/DD')
-        setCurrentDate(data)
-    }, [])
+        const data = moment().format("YYYY/MM/DD");
+        setCurrentDate(data);
+    }, []);
 
     const author = user?.displayName || user?.email || "";
+
+    const handleImageUpload = async (event) => {
+        const imageFile = event.target.files[0];
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        try {
+            const res = await axios.post(
+                `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMAGE_HOSTING_KEY}`,
+                formData
+            );
+            setImageUrl(res.data.data.display_url); // Set the uploaded image URL
+       
+        } catch (error) {
+            console.error("Error uploading image", error);
+            Swal.fire({
+                title: "Error",
+                text: "Failed to upload image",
+                icon: "error",
+                confirmButtonText: "Try Again",
+            });
+        }
+    };
 
     const handleAddBlog = async (event) => {
         event.preventDefault();
         const form = event.target;
         const title = form.title.value;
         const description = form.description.value;
-        const image = form.image.value;
         const date = currentDate;
-        // const role = isAdmin ? "Admin" : "Trainer"
+        const image = imageUrl; // Use the uploaded image URL
+
         const newBlog = {
             title,
             description,
             image,
             date,
             author,
-            // role,
         };
 
-        const res = await axiosPublic.post("/blogs", newBlog);
-
-        if (res?.data?.acknowledged) {
+        try {
+            const res = await axiosPublic.post("/blogs", newBlog);
+            if (res?.data?.acknowledged) {
+                Swal.fire({
+                    title: "Success",
+                    text: "Blog posted successfully",
+                    icon: "success",
+                    confirmButtonText: "Done",
+                }).then(() => {
+                    form.reset();
+                    setImageUrl(""); // Reset the image URL state
+                });
+            }
+        } catch (error) {
+            console.error("Error posting blog", error);
             Swal.fire({
-                title: "Success",
-                text: "Blog Posted successfully",
-                icon: "success",
-                confirmButtonText: "Done",
-            }).then(() => {
-                form.reset();
+                title: "Error",
+                text: "Failed to post blog",
+                icon: "error",
+                confirmButtonText: "Try Again",
             });
         }
-        console.log(res?.data?.acknowledged);
     };
 
     return (
@@ -79,17 +110,23 @@ const AddBlog = () => {
                     ></textarea>
                 </div>
                 <div>
-                    <label htmlFor="imageLink" className="block font-semibold mb-1">
+                    <label htmlFor="imageUpload" className="block font-semibold mb-1">
                         Image:
                     </label>
                     <input
-                        type="text"
-                        id="imageLink"
+                        type="file"
+                        id="imageUpload"
                         name="image"
                         className="w-full px-4 py-2 border rounded-md focus:outline-none focus:border-blue-500"
-                        placeholder="Paste image link here"
+                        onChange={handleImageUpload} // Image upload handler
+                        required
                     />
                 </div>
+                {imageUrl && (
+                    <div>
+                        <img src={imageUrl} alt="Uploaded" className="w-full h-auto mt-2" />
+                    </div>
+                )}
 
                 <div className="flex justify-between">
                     <div>
@@ -105,31 +142,20 @@ const AddBlog = () => {
                             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:border-blue-500"
                         />
                     </div>
-                    <div>
-                        <label htmlFor="role" className="block font-semibold mb-1">
-                            Role:
-                        </label>
-                        {/* {
-                            isAdmin ? <h1>Admin</h1> : <h1>Trainer</h1>
-                        } */}
-                    </div>
                 </div>
 
                 <div>
                     <label htmlFor="date" className="block font-semibold mb-1">
                         Date:
                     </label>
-                    {/* <input
-            type="date"
-            id="date"
-            name="date"
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:border-blue-500"
-            value={currentDate}
-            disabled
-          /> */}
-                    {
-                        currentDate
-                    }
+                    <input
+                        type="text"
+                        id="date"
+                        name="date"
+                        value={currentDate}
+                        disabled
+                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:border-blue-500"
+                    />
                 </div>
 
                 <div>

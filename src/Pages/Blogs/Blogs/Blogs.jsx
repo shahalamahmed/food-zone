@@ -1,18 +1,27 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import Swal from "sweetalert2";
 import Skeleton from "react-loading-skeleton";
 import { Link } from "react-router-dom";
 import usePaginatedBlogs from "../../../hooks/usePaginatedBlogs";
 import { AuthContext } from "../../../Providers/AuthProviders";
+import useAxiosPublic from "../../../hooks/useAxiosPublic";
 
 const Blogs = () => {
     const { user } = useContext(AuthContext);
+    const axiosPublic = useAxiosPublic();
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 6;
 
-    const { blogs, totalPages, loading } = usePaginatedBlogs(currentPage, pageSize);
+    const { blogs: fetchedBlogs, totalPages, loading } = usePaginatedBlogs(currentPage, pageSize);
+    const [blogs, setBlogs] = useState([]);
     const [votes, setVotes] = useState({});
     const [expandedPost, setExpandedPost] = useState(null);
+    const [wordMeaning, setWordMeaning] = useState({});
+    const [clickedWord, setClickedWord] = useState({});
+
+    useEffect(() => {
+        setBlogs(fetchedBlogs);
+    }, [fetchedBlogs]);
 
     const handleVote = (blogId, voteType) => {
         if (!user) {
@@ -41,8 +50,48 @@ const Blogs = () => {
         });
     };
 
+    const handleDelete = async (blogId) => {
+        try {
+            const result = await Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!",
+            });
+
+            if (result.isConfirmed) {
+                await axiosPublic.delete(`/blogs/${blogId}`);
+                setBlogs(blogs.filter(blog => blog._id !== blogId)); // Remove the deleted blog from the state
+                Swal.fire("Deleted!", "Your blog has been deleted.", "success");
+            }
+        } catch (error) {
+            console.error("Error deleting blog:", error);
+            Swal.fire("Error!", "There was an issue deleting the blog.", "error");
+        }
+    };
+
     const handleShowMore = (blogId) => {
         setExpandedPost(expandedPost === blogId ? null : blogId);
+    };
+
+    const fetchWordMeaning = async (word) => {
+        try {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            const data = await response.json();
+            return data[0]?.meanings[0]?.definitions[0]?.definition || "No definition found";
+        } catch (error) {
+            console.error("Error fetching word meaning:", error);
+            return "Error fetching definition";
+        }
+    };
+
+    const handleWordClick = async (blogId, word) => {
+        const meaning = await fetchWordMeaning(word);
+        setWordMeaning((prev) => ({ ...prev, [blogId]: meaning }));
+        setClickedWord((prev) => ({ ...prev, [blogId]: word }));
     };
 
     if (loading) return <Skeleton count={10} />;
@@ -74,11 +123,32 @@ const Blogs = () => {
                         </p>
                         <p className="text-gray-700 mb-4">
                             {expandedPost === blog._id
-                                ? blog.description
-                                : blog.description.split(' ').length > 30
-                                    ? `${blog.description.split(' ').slice(0, 30).join(' ')}...`
-                                    : blog.description}
+                                ? blog.description.split(' ').map((word, index) => (
+                                    <span
+                                        key={index}
+                                        className="cursor-pointer"
+                                        onClick={() => handleWordClick(blog._id, word)}
+                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                    >
+                                        {word}{" "}
+                                    </span>
+                                ))
+                                : blog.description.split(' ').slice(0, 30).map((word, index) => (
+                                    <span
+                                        key={index}
+                                        className="cursor-pointer"
+                                        onClick={() => handleWordClick(blog._id, word)}
+                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                    >
+                                        {word}{" "}
+                                    </span>
+                                ))}
                         </p>
+                        {clickedWord[blog._id] && (
+                            <div className="text-gray-700 mb-4">
+                                <strong>{clickedWord[blog._id]}:</strong> {wordMeaning[blog._id]}
+                            </div>
+                        )}
                         {blog.description.split(' ').length > 30 && (
                             <button
                                 className="text-blue-500 hover:underline"
@@ -109,6 +179,12 @@ const Blogs = () => {
                                     &#9660;
                                 </button>
                             </div>
+                            <button
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition duration-300"
+                                onClick={() => handleDelete(blog._id)}
+                            >
+                                Delete
+                            </button>
                         </div>
                     </div>
                 ))}

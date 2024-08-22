@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import useAxiosPublic from "../../../hooks/useAxiosPublic";
 import Swal from "sweetalert2";
 import Select from "react-select";
@@ -6,24 +6,56 @@ import Select from "react-select";
 const AddNewCourse = () => {
     const axiosPublic = useAxiosPublic();
     const [courseName, setCourseName] = useState("");
-    const [image, setImage] = useState("");
+    const [image, setImage] = useState(null);
     const [description, setDescription] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
+    const [price, setPrice] = useState("");
+    const [rating, setRating] = useState("");
     const [loader, setLoader] = useState(false);
 
-    // Example options for categories - in a real scenario, these should be fetched from an API
     const categoryOptions = [
         { value: "web-development", label: "Web Development" },
-        { value: "design", label: "Design" },
-        { value: "marketing", label: "Marketing" },
-        // Add more categories here
+        { value: "graphic-design", label: "Graphic Design" },
+        { value: "digital-marketing", label: "Digital Marketing" },
+        { value: "data-science", label: "Data Science" },
+        { value: "cybersecurity", label: "Cybersecurity" },
     ];
+
+    const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY;
+    const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
+
+    const handleImageUpload = async () => {
+        const formData = new FormData();
+        formData.append('image', image);
+
+        try {
+            const res = await axiosPublic.post(image_hosting_api, formData, {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            });
+
+            if (res.data.success) {
+                return res.data.data.display_url;
+            } else {
+                throw new Error('Image upload failed');
+            }
+        } catch (error) {
+            console.error("Image upload error:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "Failed to upload image.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return null;
+        }
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // Validate form fields
-        if (!courseName || !image || !description || selectedCategories.length === 0) {
+        if (!courseName || !image || !description || selectedCategories.length === 0 || !price || !rating) {
             Swal.fire({
                 title: "Error!",
                 text: "All fields are required and at least one category must be selected.",
@@ -35,14 +67,22 @@ const AddNewCourse = () => {
 
         setLoader(true);
 
+        const imageUrl = await handleImageUpload();
+        if (!imageUrl) {
+            setLoader(false);
+            return;
+        }
+
         const newCourse = {
             courseName,
-            image,
+            image: imageUrl,
             description,
             categories: selectedCategories.map(category => ({
                 categoryId: category.value,
                 categoryName: category.label,
             })),
+            price: parseFloat(price), // Ensure price is a number
+            rating: parseFloat(rating) // Ensure rating is a number
         };
 
         try {
@@ -56,11 +96,12 @@ const AddNewCourse = () => {
                 confirmButtonText: "OK",
             });
 
-            // Reset form fields
             setCourseName("");
-            setImage("");
+            setImage(null);
             setDescription("");
             setSelectedCategories([]);
+            setPrice("");
+            setRating("");
             event.target.reset();
         } catch (error) {
             console.error("There was an error adding the course!", error);
@@ -94,14 +135,12 @@ const AddNewCourse = () => {
                 </div>
                 <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Image URL
+                        Upload Image
                     </label>
                     <input
-                        type="text"
-                        value={image}
-                        onChange={(e) => setImage(e.target.value)}
+                        type="file"
+                        onChange={(e) => setImage(e.target.files[0])}
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        placeholder="Image URL"
                         required
                     />
                 </div>
@@ -116,6 +155,36 @@ const AddNewCourse = () => {
                         placeholder="Course Description"
                         required
                     ></textarea>
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Price ($)
+                    </label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        placeholder="Price"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Rating (1-5)
+                    </label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        step="0.1"
+                        value={rating}
+                        onChange={(e) => setRating(e.target.value)}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        placeholder="Rating"
+                        required
+                    />
                 </div>
                 <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-bold mb-2">

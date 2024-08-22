@@ -11,6 +11,8 @@ import Blogs from "../Pages/Blogs/Blogs/Blogs";
 import AddBlog from "../Pages/Blogs/AddBlog/AddBlog";
 import AddNewCourse from "../Pages/Course/AddNewCourse/AddNewCourse";
 import AllCourse from "../Pages/Course/Course/AllCourse";
+import UpdateCourse from "../Pages/Course/UpdateCourse/UpdateCourse";
+import BlogsDetails from "../Pages/Home/BlogsDetails/BlogsDetails";
 
 
 
@@ -45,6 +47,11 @@ export const router = createBrowserRouter([
         path: 'addBlog',
         element: <AddBlog></AddBlog>
       },
+      {
+        path: 'blogsDetails/:id',
+        element: <BlogsDetails></BlogsDetails>,
+        loader: ({ params }) => fetch(`http://localhost:5000/blogs/${params.id}`)
+      },
       // course
       {
         path: '/allCourse',
@@ -53,6 +60,11 @@ export const router = createBrowserRouter([
       {
         path: 'addCourse',
         element: <AddNewCourse></AddNewCourse>
+      },
+      {
+        path: '/updateCourse/:id',
+        element: <UpdateCourse></UpdateCourse>,
+        loader: ({ params }) => fetch(`http://localhost:5000/courses/${params.id}`)
       }
 
     ]

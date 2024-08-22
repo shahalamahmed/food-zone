@@ -10,6 +10,8 @@ const LatestBlogs = () => {
     const { allBlogs, loading } = useBlogs();
     const [votes, setVotes] = useState({});
     const [expandedPost, setExpandedPost] = useState(null);
+    const [wordMeaning, setWordMeaning] = useState({});
+    const [clickedWord, setClickedWord] = useState({});
 
     const handleVote = (blogId, voteType) => {
         if (!user) {
@@ -46,6 +48,23 @@ const LatestBlogs = () => {
         setExpandedPost(expandedPost === blogId ? null : blogId);
     };
 
+    const fetchWordMeaning = async (word) => {
+        try {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            const data = await response.json();
+            return data[0]?.meanings[0]?.definitions[0]?.definition || "No definition found";
+        } catch (error) {
+            console.error("Error fetching word meaning:", error);
+            return "Error fetching definition";
+        }
+    };
+
+    const handleWordClick = async (blogId, word) => {
+        const meaning = await fetchWordMeaning(word);
+        setWordMeaning((prev) => ({ ...prev, [blogId]: meaning }));
+        setClickedWord((prev) => ({ ...prev, [blogId]: word }));
+    };
+
     if (loading) return <Skeleton count={10} />;
 
     return (
@@ -56,20 +75,40 @@ const LatestBlogs = () => {
                     {allBlogs?.map((blog) => (
                         <div
                             key={blog._id}
-                            className={`bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-300 ${
-                                expandedPost === blog._id ? 'transform scale-105' : 'transform scale-100'
-                            }`}
+                            className={`bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-300 ${expandedPost === blog._id ? 'transform scale-105' : 'transform scale-100'
+                                }`}
                         >
                             <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
                             <div className="p-6">
                                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{blog.title}</h3>
                                 <p className="text-gray-600 mb-4">
                                     {expandedPost === blog._id
-                                        ? blog.description
-                                        : blog.description.split(' ').length > 30
-                                            ? `${blog.description.split(' ').slice(0, 30).join(' ')}...`
-                                            : blog.description}
+                                        ? blog.description.split(' ').map((word, index) => (
+                                            <span
+                                                key={index}
+                                                className="cursor-pointer"
+                                                onClick={() => handleWordClick(blog._id, word)}
+                                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                            >
+                                                {word}{" "}
+                                            </span>
+                                        ))
+                                        : blog.description.split(' ').slice(0, 30).map((word, index) => (
+                                            <span
+                                                key={index}
+                                                className="cursor-pointer"
+                                                onClick={() => handleWordClick(blog._id, word)}
+                                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                            >
+                                                {word}{" "}
+                                            </span>
+                                        ))}
                                 </p>
+                                {clickedWord[blog._id] && (
+                                    <div className="text-gray-700 mb-4">
+                                        <strong>{clickedWord[blog._id]}:</strong> {wordMeaning[blog._id]}
+                                    </div>
+                                )}
                                 {blog.description.split(' ').length > 30 && (
                                     <button
                                         className="text-blue-500 hover:underline"
@@ -94,7 +133,7 @@ const LatestBlogs = () => {
                                             &#9660;
                                         </button>
                                     </div>
-                                    <Link to={`/blogs/${blog._id}`}>
+                                    <Link to={`/blogsDetails/${blog._id}`}>
                                         <button className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">
                                             Read More
                                         </button>
